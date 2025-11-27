@@ -37,7 +37,7 @@ variable "image_url_app" {
 variable "container_port" {
   description = "Container port your app listens on"
   type        = number
-  default     = 8000
+  default     = 8080
 }
 
 variable "slack_webhook_url" {
