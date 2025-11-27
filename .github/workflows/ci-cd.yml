@@ -13,7 +13,7 @@ jobs:
       packages: read
     defaults:
       run:
-        working-directory: src
+        working-directory: ./
     env:
       REGION: us-east1
     steps:
@@ -45,7 +45,7 @@ jobs:
       packages: read
     defaults:
       run:
-        working-directory: src
+        working-directory: ./
     env:
       REGION: us-east1
     steps:
