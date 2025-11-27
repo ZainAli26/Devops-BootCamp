@@ -19,7 +19,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Docker login
-        run: echo $GCP_CREDENTIALS | docker login -u "_json_key" --password-stdin "https://${{ env.REGION }}-docker.pkg.dev"
+        run: echo "${GCP_CREDENTIALS}" | docker login -u "_json_key" --password-stdin "https://${{ env.REGION }}-docker.pkg.dev"
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
@@ -51,7 +51,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Docker login
-        run: echo $GCP_CREDENTIALS | docker login -u "_json_key" --password-stdin "https://${{ env.REGION }}-docker.pkg.dev"
+        run: echo "${GCP_CREDENTIALS}" | docker login -u "_json_key" --password-stdin "https://${{ env.REGION }}-docker.pkg.dev"
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
