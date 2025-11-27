@@ -13,6 +13,17 @@ resource "google_secret_manager_secret_version" "slack_webhook_version" {
   secret_data = var.slack_webhook_url
 }
 
+locals {
+    repo_path = "${path.root}/.."
+    package_name = "cloud-bootcamp"
+}
+
+data "archive_file" "function_zip" {
+    type = "zip"
+    source_dir = "${local.repo_path}/cloud_function"
+    output_path = "${local.repo_path}/packages/${local.package_name}.zip"
+}
+
 # -------------------------------
 # 2. Pub/Sub Topic
 # -------------------------------
@@ -31,7 +42,7 @@ resource "google_storage_bucket" "function_bucket" {
 resource "google_storage_bucket_object" "function_archive" {
   name   = "notify_low_stock.zip"
   bucket = google_storage_bucket.function_bucket.name
-  source = "cloud_function/notify_low_stock.zip"
+  source = data.archive_file.function_zip.output_path
 }
 
 # -------------------------------
@@ -56,6 +67,9 @@ resource "google_cloudfunctions_function" "notify_low_stock" {
     secret  = google_secret_manager_secret.slack_webhook.secret_id
     version = "latest"
   }
+  depends_on = [
+      google_storage_bucket_object.function_archive
+  ]
 }
 
 # -------------------------------
