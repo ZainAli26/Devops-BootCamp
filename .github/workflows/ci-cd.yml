@@ -100,6 +100,6 @@ jobs:
       - uses: hashicorp/setup-terraform@v1
       - run: terraform init
       - run: terraform validate
-      - run: terraform plan -var="slack_webhook_url=$SLACK_WEBHOOK"
-      - run: terraform apply -var="slack_webhook_url=$SLACK_WEBHOOK" -auto-approve
+      - run: terraform plan -var="image_url_app=${{ needs.build-image-app.outputs.image }}" -var="image_url=${{ needs.build-image-api.outputs.image }}" -var="slack_webhook_url=$SLACK_WEBHOOK"
+      - run: terraform apply -var="image_url_app=${{ needs.build-image-app.outputs.image }}" -var="image_url=${{ needs.build-image-api.outputs.image }}"  -var="slack_webhook_url=$SLACK_WEBHOOK" -auto-approve
 
