@@ -93,7 +93,7 @@ jobs:
       run:
         working-directory: terraform
     env:
-      GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
     steps:
       - uses: actions/checkout@v2
