@@ -18,8 +18,14 @@ jobs:
       REGION: us-east1
     steps:
       - uses: actions/checkout@v2
-      - name: Docker login
-        run: echo "${GCP_CREDENTIALS}" | docker login -u "_json_key" --password-stdin "https://${{ env.REGION }}-docker.pkg.dev"
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker us-east1-docker.pkg.dev
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
@@ -50,8 +56,13 @@ jobs:
       REGION: us-east1
     steps:
       - uses: actions/checkout@v2
-      - name: Docker login
-        run: echo "${GCP_CREDENTIALS}" | docker login -u "_json_key" --password-stdin "https://${{ env.REGION }}-docker.pkg.dev"
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GCP_CREDENTIALS }}
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker us-east1-docker.pkg.dev
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
