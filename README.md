@@ -280,3 +280,6 @@ After Terraform completes you will receive:
 
 - Open Cloud Run in the Google Cloud Console, search for the service named demo-app, and open it. Copy or click the service URL to run and test the deployed application in your browser.
 - Finally, check your Slack channel to verify that notifications are being received successfully.
+
+
+**Note:** If you have any questions or run into issues, please join our Slack workspace using this link: [Cloud DevOps Bootcamp Slack](https://join.slack.com/t/cloud-devops-bootcamp/shared_invite/zt-3jmuw3yat-AAnr1FboftINtCghTDU8Nw). You can use the channel to discuss setup problems or any other concerns.
