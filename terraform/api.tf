@@ -50,6 +50,9 @@ resource "google_cloud_run_service_iam_member" "api_noauth" {
   service  = google_cloud_run_service.api_service.name
   role     = "roles/run.invoker"
   member   = "allUsers"
+  depends_on = [
+    google_cloud_run_service.api_service
+  ]
 }
 
 output "api_service_url" {

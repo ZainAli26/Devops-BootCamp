@@ -1,0 +1,7 @@
+*.hcl
+terraform/.terraform/*
+*.pyc
+*.tfstate
+*.zip
+README2.md
+packages/*
