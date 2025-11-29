@@ -131,5 +131,5 @@ jobs:
       - run: terraform apply
           -var="image_url_app=${{ needs.build-image-app.outputs.image }}"
           -var="image_url=${{ needs.build-image-api.outputs.image }}"
-          -var="slack_webhook_url=$SLACK_WEBHOOK" \
+          -var="slack_webhook_url=$SLACK_WEBHOOK"
           -auto-approve
