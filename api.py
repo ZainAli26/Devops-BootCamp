@@ -19,7 +19,6 @@ class Item(BaseModel):
 @app.post("/items")
 async def create_item(item: Item):
     try:
-        print("Hello")
         doc_ref = collection_ref.document()
         doc_ref.set(item.model_dump())
         return {"id": doc_ref.id, "message": "Item created successfully"}

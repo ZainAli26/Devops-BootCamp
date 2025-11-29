@@ -1,49 +1,63 @@
 name: CI-CD-Pipeline
 
+# Trigger workflow on push to the 'development' branch
 on:
   push:
     branches:
       - development
 
 jobs:
+  # =======================
+  # Build Docker image for API
+  # =======================
   build-image-api:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      packages: read
+      contents: read        # Allows reading repo content
+      packages: read        # Allows reading GitHub packages (optional)
     defaults:
       run:
-        working-directory: ./
+        working-directory: ./   # Set working directory
     env:
-      REGION: us-east1
+      REGION: us-east1     # Region for Artifact Registry
     steps:
+      # Step 1: Checkout code
       - uses: actions/checkout@v2
+
+      # Step 2: Authenticate to GCP using the service account JSON stored as a secret
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
 
+      # Step 3: Configure Docker to use GCP Artifact Registry
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker us-east1-docker.pkg.dev
 
+      # Step 4: Generate Docker metadata (tags and labels) for the API image
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
         with:
           images: ${{ env.REGION }}-docker.pkg.dev/gaggar-dev/cloud-bootcamp/api
           tags: |
-            type=sha
+            type=sha   # Use the commit SHA as the image tag
+
+      # Step 5: Build and push the Docker image to Artifact Registry
       - name: Build the Docker image for api
         uses: docker/build-push-action@v2
         with:
-          context: ./
-          file: ./api.Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          context: ./                  # Build context (root of repo)
+          file: ./api.Dockerfile       # Dockerfile path for API
+          push: true                   # Push image to Artifact Registry
+          tags: ${{ steps.meta.outputs.tags }}      # Use generated tag
+          labels: ${{ steps.meta.outputs.labels }}  # Use generated labels
     outputs:
-      image: ${{ steps.meta.outputs.tags }}
+      image: ${{ steps.meta.outputs.tags }}   # Output image tag for downstream jobs
 
+  # =======================
+  # Build Docker image for App (Streamlit)
+  # =======================
   build-image-app:
     runs-on: ubuntu-latest
     permissions:
@@ -60,7 +74,6 @@ jobs:
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GCP_CREDENTIALS }}
-
       - name: Configure Docker for Artifact Registry
         run: gcloud auth configure-docker us-east1-docker.pkg.dev
       - name: Docker meta
@@ -70,36 +83,53 @@ jobs:
           images: ${{ env.REGION }}-docker.pkg.dev/gaggar-dev/cloud-bootcamp/app
           tags: |
             type=sha
-      - name: Build the Docker image for api
+      - name: Build the Docker image for app
         uses: docker/build-push-action@v2
         with:
-          context: ./
-          file: ./app.Dockerfile
-          push: true
+          context: ./                       # Root directory for build
+          file: ./app.Dockerfile            # Dockerfile for App
+          push: true                        # Push to Artifact Registry
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
     outputs:
-      image: ${{ steps.meta.outputs.tags }}
+      image: ${{ steps.meta.outputs.tags }}   # Output image tag for deploy
 
-  
-
+  # =======================
+  # Deploy both API and App using Terraform
+  # =======================
   deploy-api:
-    needs: [build-image-api, build-image-app]
+    needs: [build-image-api, build-image-app]  # Wait for Docker builds
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: read
     defaults:
       run:
-        working-directory: terraform
+        working-directory: terraform   # Run Terraform commands from terraform folder
     env:
-      GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
-      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}   # GCP auth
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}         # Slack URL for notifications
     steps:
       - uses: actions/checkout@v2
-      - uses: hashicorp/setup-terraform@v1
-      - run: terraform init
-      - run: terraform validate
-      - run: terraform plan -var="image_url_app=${{ needs.build-image-app.outputs.image }}" -var="image_url=${{ needs.build-image-api.outputs.image }}" -var="slack_webhook_url=$SLACK_WEBHOOK"
-      - run: terraform apply -var="image_url_app=${{ needs.build-image-app.outputs.image }}" -var="image_url=${{ needs.build-image-api.outputs.image }}"  -var="slack_webhook_url=$SLACK_WEBHOOK" -auto-approve
 
+      # Step 1: Setup Terraform CLI
+      - uses: hashicorp/setup-terraform@v1
+
+      # Step 2: Initialize Terraform (download providers, setup backend)
+      - run: terraform init
+
+      # Step 3: Validate Terraform configuration files
+      - run: terraform validate
+
+      # Step 4: Create an execution plan (dry-run)
+      - run: terraform plan \
+          -var="image_url_app=${{ needs.build-image-app.outputs.image }}" \
+          -var="image_url=${{ needs.build-image-api.outputs.image }}" \
+          -var="slack_webhook_url=$SLACK_WEBHOOK"
+
+      # Step 5: Apply Terraform plan to deploy infrastructure
+      - run: terraform apply \
+          -var="image_url_app=${{ needs.build-image-app.outputs.image }}" \
+          -var="image_url=${{ needs.build-image-api.outputs.image }}" \
+          -var="slack_webhook_url=$SLACK_WEBHOOK" \
+          -auto-approve
