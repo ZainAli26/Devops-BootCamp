@@ -122,14 +122,14 @@ jobs:
       - run: terraform validate
 
       # Step 4: Create an execution plan (dry-run)
-      - run: terraform plan \
-          -var="image_url_app=${{ needs.build-image-app.outputs.image }}" \
-          -var="image_url=${{ needs.build-image-api.outputs.image }}" \
+      - run: terraform plan
+          -var="image_url_app=${{ needs.build-image-app.outputs.image }}"
+          -var="image_url=${{ needs.build-image-api.outputs.image }}"
           -var="slack_webhook_url=$SLACK_WEBHOOK"
 
       # Step 5: Apply Terraform plan to deploy infrastructure
-      - run: terraform apply \
-          -var="image_url_app=${{ needs.build-image-app.outputs.image }}" \
-          -var="image_url=${{ needs.build-image-api.outputs.image }}" \
+      - run: terraform apply
+          -var="image_url_app=${{ needs.build-image-app.outputs.image }}"
+          -var="image_url=${{ needs.build-image-api.outputs.image }}"
           -var="slack_webhook_url=$SLACK_WEBHOOK" \
           -auto-approve
